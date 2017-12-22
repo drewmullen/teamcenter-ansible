@@ -1,0 +1,35 @@
+---
+
+## this playbook sets up a group for L2 admins and sets their permissions in sudoers
+
+- name: Create groups
+  group:
+    name: "{{ item.name }}"
+    state: present
+  with_items:
+    - { name: 'support' }
+
+# make a copy of sudoers file in case edit screws up original
+
+- name: Copy sudoers file for safety
+  command: cp -f /etc/sudoers /etc/sudoers.tmp
+
+- name: Create sudoers file backup
+  command: cp -f /etc/sudoers /etc/sudoers.bak
+
+- name: make sure we can sudo as admin group
+  lineinfile:
+    dest: /etc/sudoers.tmp
+    state: present
+    regexp: '^%support'
+    line: '%support ALL=(ALL) NOPASSWD: {{ support_commands }}'
+
+- name: Final sudoers file check
+  shell: visudo -q -c -f /etc/sudoers.tmp && cp -f /etc/sudoers.tmp /etc/sudoers
+
+- name: add users to support group
+  user:
+    name: "{{ item.name }}"
+    append: yes
+    groups: support
+  with_items: "{{ userlist }}"

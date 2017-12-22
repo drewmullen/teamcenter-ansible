@@ -1,0 +1,113 @@
+---
+############################################################
+# common-server vars
+download_svr: http://<server>:3000
+java_download_url: "{{ download_svr }}/ansible/bootstrap/java/"
+# 90-nproc values
+nproc_limit: unlimited
+
+# limits.conf values
+soft_no_file: 1024000
+
+# filesystem sizes (if LV creation is required)
+app_size: 20G
+data_size: 5G
+transfer_area_size: 5G
+vg: u01_vg01
+
+
+##########################################################
+# oracle vars
+oracle_http_port: 8081
+oracle_listener_port: 1521
+oracle_password: <password>
+oracle_confirm_password: "{{ oracle_password }}"
+oracle_dbenable: y
+##########################################################
+# primary pool vars# Variables for silent.xml
+
+pm_name: TransPLM_Proto
+infodba_pass: infodba
+tc_install: /data/Tc11.2.0/tem.sh
+silent_file: /app/tc11/silent-pm.xml
+
+##########################################################
+# tc web thin client vars
+thin_download_url: "{{ download_svr }}/downloads/"
+eap_name: jboss-eap-6.3
+
+target_dir: /app/jboss
+##########################################################
+# httpd vars
+httpd_download_url: "{{ download_svr }}/ansible/{{ http_version }}.tar.gz"
+http_version: http24
+
+httpd_bin: "/app/{{ http_version }}/bin"
+
+http_listen_port: 80
+
+server_fqdn: "{{ ansible_fqdn }}"
+server_port: 80
+#ServerName cingetsws001pp.corporate.ge.com:80
+
+proxy_control: |
+  ProxyRequests Off
+  ProxyPreserveHost On
+
+  <Proxy *>
+   Order deny,allow
+   Allow from all
+  </Proxy>
+
+proxy_pass: |
+  ProxyPass /tc http://{{ server_fqdn }}:8080/tc
+  ProxyPassReverse /tc http://{{ server_fqdn }}:8080/tc
+
+  ProxyPass /awc http://{{ server_fqdn }}:8080/awc
+  ProxyPassReverse /awc http://{{ server_fqdn }}:8080/awc
+
+#  ProxyPass /edot http://{{ server_fqdn }}:8180/edot
+#  ProxyPassReverse /edot http://{{ server_fqdn }}:8180/edot
+
+#  ProxyPass /TcIDMServices http://{{ server_fqdn }}:8180/TcIDMServices-1.0
+#  ProxyPassReverse /TcIDMServices http://{{ server_fqdn }}:8180/TcIDMServices-1.0
+
+#################################################################################
+# t4o GS / BGS vars
+
+BGS_ROOT: /app/t4o/1123/bgs
+GS_ROOT: /app/t4o/1123/gs
+
+T4O_ORACLE_SYSTEM_ID: ""
+T4O_JDBC_URL: "jdbc:oracle:thin:@//<server>:1526/"
+T4O_JDBC_SCHEMA_NAME: ""
+T4O_JDBC_CHECK_USER: ""
+T4O_JDBC_CHECK_PASS: ""
+T4O_ORACLE_ENCRYPTED_USERNAME: ""
+T4O_ORACLE_ENCRYPTED_PASSWORD: ""
+
+T4O_TC_ENCRYPTED_USERNAME: ""
+T4O_TC_ENCRYPTED_PASSWORD: ""
+T4O_TC_ENCRYPTED_GROUP: ""
+
+################################################################################
+# sudoers file vars#
+userlist:
+  - { name: lg278605 }
+  - { name: lg707029 }
+  - { name: lg375597 }
+  - { name: lg212475 }
+  - { name: lg614671 }
+  - { name: lg569104 }
+  - { name: lg314660 }
+  - { name: lg707028 }
+  - { name: lg667369 }
+
+apache_cmds: /app/httpd24/bin/apachectl
+jboss_cmds: /etc/init.d/jboss-as-standalone
+fsc_cmds: /app/tc11/tcroot/fsc/rc.ugsFSC_TransPLM_MASTER
+bgs_cmds: /app/t4o/112/bgs/bin64/status,/app/t4o/112/bgs/bin64/restart
+gs_cmds: /app/t4o/112/gs/bin64/status,/app/t4o/112/gs/bin64/restart
+
+
+support_commands: "{{ apache_cmds }},{{ jboss_cmds }},{{ fsc_cmds }},{{ gs_cmds }},{{bgs_cmds}}"

@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# apache2        Startup script for the Apache HTTP Server
+#
+# chkconfig: 3 85 15
+# description: Apache is a World Wide Web server.  It is used to serve \
+#              HTML files and CGI.
+
+/app/{{ http_version }}/bin/apachectl $@

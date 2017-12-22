@@ -1,0 +1,64 @@
+-   name: Create "tc11" and "t4o" directories
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: 17001
+      group: 4544
+      mode: 0755
+    with_items:
+      - /app/tc11
+      - /app/t4o
+      - /tc/
+
+# grab the silent install file
+# edit parts of the silent file based on ohai vars
+
+- name: configure silent.xml from template
+  template:
+    src: silent-pm.j2
+    dest: "{{ silent_file }}"
+    owner: infodba
+    group: dba
+    mode: 0777
+
+# set env variables
+
+- name: Adding the java to env vars
+  lineinfile:
+    dest: /etc/profile
+    line: "{{ item.line }}"
+    insertafter: 'EOF'
+  with_items:
+    - { line: 'export JAVA_HOME=/app/java/jdk1.8.0_112' }
+    - { line: 'export JRE_HOME=/app/java/jdk1.8.0_112/jre' }
+
+
+# install tc via silent file
+
+- name: install TC primary pool
+  shell: "{{ tc_install }} -s {{ silent_file }}"
+  become_method: su
+  become_user: infodba
+#watch progress by tail -f /app/tc11/install/install_xyayzy
+
+# customization installs
+## BMIDE
+## Libraries
+## Preferences
+
+# install gs
+
+# unzip package to dest
+# template: GET_t4o_ebs_config_env.sd
+# template: t4o_mapping_config.sd
+# compile mapping configs
+# metacache
+# start gs
+
+# copy over init.d files
+# edit init.d files with ohai vars
+# enable sharing of /tc/tcdata
+
+
+# start services
+# enable services

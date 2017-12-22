@@ -1,0 +1,33 @@
+#- name: Create filesystems
+#  lvol:
+#    active: yes
+#    vg: "{{ vg }}"
+#    lv: "{{ item.lv_name }}"
+#    size: "{{ item.lv_size }}"
+#    state: present
+#    shrink: no
+#  with_items:
+#    - { lv_name: 'lv_app', lv_size: '{{ app_size }}'}
+#    - { lv_name: 'lv_data', lv_size: '{{ data_size }}'}
+#    - { lv_name: 'lv_transfer_area', lv_size: '{{ transfer_area_size }}'}
+#
+#- name: Make FS
+#  filesystem:
+#    dev: /dev/{{ vg }}/{{ item.lv_name }}
+#    fstype: ext4
+#    resizefs: yes
+#  with_items:
+#    - { lv_name: 'lv_app' }
+#    - { lv_name: 'lv_data' }
+#    - { lv_name: 'lv_transfer_area' }
+
+#- name: Mount new FS
+#  mount:
+#    src: /dev/{{ vg }}/{{ item.lv_name }}
+#    path: "{{ item.lv_path }}"
+#    state: mounted
+#    fstype: ext4
+#  with_items:
+#    - { lv_name: 'lv_app', lv_path: '/app'}
+#    - { lv_name: 'lv_data', lv_path: '/data'}
+#    - { lv_name: 'lv_transfer_area', lv_path: '/transfer_area'}

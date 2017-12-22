@@ -1,0 +1,55 @@
+---
+#
+# using extended oravirt library modules to config db
+#
+
+
+## can this be abstracted?
+## setups up LV and a FS for /u01
+- name: Create filesystems
+  lvol:
+    active: yes
+    vg: "{{ vg }}"
+    lv: "{{ item.lv_name }}"
+    size: "{{ item.lv_size }}"
+    state: present
+    shrink: no
+  with_items:
+    - { lv_name: 'lv_u01', lv_size: '5G'}
+
+- name: Make FS
+  filesystem:
+    dev: /dev/{{ vg }}/{{ item.lv_name }}
+    fstype: ext4
+    resizefs: yes
+  with_items:
+    - { lv_name: 'lv_u01' }
+
+- name: Mount new FS
+  mount:
+    src: /dev/{{ vg }}/{{ item.lv_name }}
+    path: "{{ item.lv_path }}"
+    state: mounted
+    fstype: ext4
+  with_items:
+    - { lv_name: 'lv_u01', lv_path: '/u01'}
+#
+#
+- name: Create oracle .DBF files
+  file:
+    path: "{{ item.path }}"
+    owner: oracle
+    group: dba
+    state: touch
+  with_items:
+    - { path: '/u01/app/oracle/oradata/XE/ILOG.DBF' }
+    - { path: '/u01/app/oracle/oradata/XE/IDATA.DBF' }
+
+
+- name: deploy tc schema
+  shell: sqlplus system/<password>@XE @{{ playbook_dir }}/roles/db-config/files/tc-schema-deploy.sql
+  become: false
+
+#  become: true
+#  become_user: oracle
+#  become_method: sudo

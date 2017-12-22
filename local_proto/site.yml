@@ -1,0 +1,13 @@
+---
+## This site.yml sets up a proto env, deploys all TC tools to localhost
+## author: Drew Mullen
+
+- hosts: "{{ targethost }}"
+  become: true
+  roles:
+    - common-server
+    - oracle-xe
+    - db-config
+    - primary-pool
+    - sudoers-file
+    - tc-web

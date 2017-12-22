@@ -1,0 +1,40 @@
+---
+
+####
+# 1. install apache
+# 2. adjust conf file
+# 3. create startup script
+# 4. enable service
+#
+
+
+- name: get httpd zip file
+  get_url:
+    url: "{{ httpd_download_url }}"
+    dest: "/app/"
+
+- name: unzip httpd files
+  unarchive:
+    src: "/app/{{ http_version }}.tar.gz"
+    dest: "/app/"
+    group: dba
+    owner: infodba
+
+- name: deploy httpd.conf
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items:
+    - { src: 'httpd.j2', dest: '/app/{{ http_version }}/conf/httpd.conf', mode: '0755', owner: 'infodba', group: 'dba' }
+    - { src: 'init.d.j2', dest: '/etc/init.d/httpd', mode: '0755', owner: 'root', group: 'root' }
+#    - { src: 'apachectl.j2', dest: '{{ httpd_bin }}/apachectl', mode: '0755', owner: 'infodba', group: 'dba' }
+
+
+- name: start & enable apache service
+  service:
+    name: httpd
+    state: started
+    enabled: yes

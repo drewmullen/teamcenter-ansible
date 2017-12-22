@@ -1,0 +1,20 @@
+---
+
+# grab zip and unarchive /app/t4o
+# template for bash script: control var names based on machine info
+# execute bash script: GET_t4o_ebs_config_env.sd  t4o_mapping_config.sd
+### 1. grab correct files
+### 2. modify those files
+# move files to correct dest
+# compile mapping files (cmd)
+# generate metachace (cmd)
+# restart local pm
+#
+#gs root/bin64 ./mmap -dstdir lib
+
+# Mapping File Compile
+
+# ./tpapps /app/t4o/112/gs/var/init/start.test /app/t4o/112/gs/var/test/Base/ebs_create_storedprocmetafile4jdbc.tcl -System TSOADEV1
+
+#Metafile Generation
+#MAPPINGS are inside - %GS_ROOT%/var/mmap - prakalp

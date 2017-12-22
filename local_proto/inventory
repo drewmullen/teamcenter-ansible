@@ -1,0 +1,5 @@
+[centos]
+192.168.100.10
+
+[all:vars]
+ansible_ssh_user=ansible

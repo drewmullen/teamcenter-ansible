@@ -1,0 +1,75 @@
+---
+
+## setup users and groups
+
+- name: Create "jboss" & "dba" groups
+  group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid }}"
+    state: present
+  with_items:
+    - { name: 'jboss', gid: '4545'}
+    - { name: 'dba', gid: '4544'}
+
+- name: Create jboss and infodba users
+  user:
+    name: "{{ item.name }}"
+    password: "{{ item.pwd }}"
+    state: present
+    uid: "{{ item.uid }}"
+    groups: "{{ item.group }}"
+  with_items:
+    - { name: 'jboss', uid: '17002', group: 'jboss', pwd: '' }
+    - { name: 'infodba', uid: '17001', group: 'dba', pwd: '' }
+
+## create directories for tc setup
+
+- name: Create directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: 0755
+  with_items:
+    - { path: '/transfer_area', owner: 'infodba', group: 'dba' }
+    - { path: '/app/ant', owner: 'infodba', group: 'dba' }
+    - { path: '/data/transient_volume', owner: 'infodba', group: 'dba' }
+    - { path: '/data/tc_tmp_dir', owner: 'infodba', group: 'dba' }
+
+## install pre-requisites
+
+- name: Yum packages
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - git
+    - svn
+    - wget
+
+- name: Download java with wget
+  shell: "wget --cut-dirs=2 -mnH -np -R 'index.*'  {{ java_download_url }}"
+  async: 1000
+  poll: 15
+  ignore_errors: yes
+  args:
+    chdir: /app
+
+## setup security files
+
+- name: Configure 90-nproc.conf
+  template:
+    src: 90-nproc.j2
+    dest: /etc/security/limits.d/90-nproc.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure limits.conf
+  template:
+    src: limits.j2
+    dest: /etc/security/limits.conf
+    owner: root
+    group: root
+    mode: 0644

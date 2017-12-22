@@ -1,0 +1,61 @@
+---
+#### install process
+# 1. create tc.war
+# 2. install jboss-as (proto env)
+## copy over eap.zip to /tmp
+## unzip to /app/jboss/<target_dir>
+## set permissions
+## template: standalone.xml to /configuration
+## template: jboss-as-standalone.sh to /etc/init.d/
+## template: jboss-as to /etc/jboss-as/jboss-as.conf
+# 3. move tc.war into ../standalone/deployments
+# 4. start jboss using init.d script
+####
+
+### 2 install jboss
+- name: Create directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { path: '{{ target_dir }}', owner: 'jboss', group: 'jboss', mode: '0755' }
+    - { path: '/etc/jboss-as/', owner: 'root', group: 'root', mode: '0300' }
+
+- name: unpack zip file
+  unarchive:
+    remote_src: yes
+    src: "{{ thin_download_url }}/{{ eap_name }}.zip"
+    dest: "{{ target_dir }}"
+    group: jboss
+    owner: jboss
+    mode: 0755
+
+- name: configure using templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'jboss-as.j2', dest: '/etc/jboss-as/jboss-as.conf', mode: '0644'}
+    - { src: 'jboss-as-standalone.j2', dest: '/etc/init.d/jboss-as-standalone', mode: '0755'}
+    - { src: 'standalone.j2', dest: '{{ target_dir }}/{{ eap_name }}/standalone/configuration/standalone.xml', mode: '0644'}
+
+### 3 move tc.war
+
+- name: get tc.war
+  get_url:
+    url: "{{ download_svr }}/ansible/tc.war"
+    dest: "{{ target_dir }}/{{ eap_name }}/standalone/deployments/"
+    owner: jboss
+    group: jboss
+    mode: 0755
+
+### 4 start jboss
+
+- name: start jboss
+  service:
+    name: jboss-as-standalone
+    state: started
